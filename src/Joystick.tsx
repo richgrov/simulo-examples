@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const WIDTH = 400;
 const HEIGHT = 400;
@@ -69,23 +69,33 @@ export function MoveControl() {
     };
   }, []);
 
-  function dragStart(e: MouseEvent<HTMLCanvasElement>) {
+  function dragStart(
+    currentTarget: HTMLCanvasElement,
+    clientX: number,
+    clientY: number
+  ) {
     setDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const dx = e.clientX - rect.left - WIDTH / 2;
-    const dy = e.clientY - rect.top - HEIGHT / 2;
+    const rect = currentTarget.getBoundingClientRect();
+    const dx = clientX - rect.left - WIDTH / 2;
+    const dy = clientY - rect.top - HEIGHT / 2;
     dragOffset.current = [dx, dy];
   }
 
-  function drag(e: MouseEvent<HTMLCanvasElement>) {
+  function drag(
+    currentTarget: HTMLCanvasElement,
+    clientX: number,
+    clientY: number
+  ) {
     if (!dragging) {
       return;
     }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left - WIDTH / 2 - dragOffset.current[0];
-    const y = e.clientY - rect.top - HEIGHT / 2 - dragOffset.current[1];
-    joystickPos.current = [x, y];
+    const rect = currentTarget.getBoundingClientRect();
+    const x = clientX - rect.left - WIDTH / 2 - dragOffset.current[0];
+    const y = clientY - rect.top - HEIGHT / 2 - dragOffset.current[1];
+    const xScaleFactor = WIDTH / rect.width;
+    const yScaleFactor = HEIGHT / rect.height;
+    joystickPos.current = [x * xScaleFactor, y * yScaleFactor];
   }
 
   function dragEnd() {
@@ -98,11 +108,15 @@ export function MoveControl() {
       width={WIDTH}
       height={HEIGHT}
       ref={canvasRef}
-      /*onTouchStart={dragStart}
-        onTouchMove={drag}
-        onTouchEnd={dragEnd}*/
-      onMouseDown={dragStart}
-      onMouseMove={drag}
+      onTouchStart={(e) =>
+        dragStart(e.currentTarget, e.touches[0].clientX, e.touches[0].clientY)
+      }
+      onTouchMove={(e) =>
+        drag(e.currentTarget, e.touches[0].clientX, e.touches[0].clientY)
+      }
+      onTouchEnd={dragEnd}
+      onMouseDown={(e) => dragStart(e.currentTarget, e.clientX, e.clientY)}
+      onMouseMove={(e) => drag(e.currentTarget, e.clientX, e.clientY)}
       onMouseUp={dragEnd}
     ></canvas>
   );
@@ -178,28 +192,22 @@ export function StrafeControl() {
     };
   }, []);
 
-  function dragStart(e: MouseEvent<HTMLCanvasElement>) {
+  function dragStart(currentTarget: HTMLCanvasElement, clientX: number) {
     setDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left - (WIDTH / 2 + sliderPos.current);
+    const rect = currentTarget.getBoundingClientRect();
+    const offsetX = clientX - rect.left - WIDTH / 2;
     dragOffset.current = offsetX;
   }
 
-  function drag(e: MouseEvent<HTMLCanvasElement>) {
+  function drag(currentTarget: HTMLCanvasElement, clientX: number) {
     if (!dragging) {
       return;
     }
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const actualWidth = rect.width;
-    const scaleFactor = WIDTH / actualWidth;
-
-    const centerX = actualWidth / 2;
-    const trackWidth = (WIDTH - 64 - 32) / scaleFactor; // Account for head size
-
-    const x = e.clientX - rect.left - centerX - dragOffset.current;
-    const clampedX = Math.max(-trackWidth / 2, Math.min(trackWidth / 2, x));
-    sliderPos.current = clampedX * scaleFactor;
+    const rect = currentTarget.getBoundingClientRect();
+    const x = clientX - rect.left - WIDTH / 2 - dragOffset.current;
+    const scaleFactor = WIDTH / rect.width;
+    sliderPos.current = x * scaleFactor;
   }
 
   function dragEnd() {
@@ -212,8 +220,11 @@ export function StrafeControl() {
       width={WIDTH}
       height={STRAFE_HEIGHT}
       ref={canvasRef}
-      onMouseDown={dragStart}
-      onMouseMove={drag}
+      onTouchStart={(e) => dragStart(e.currentTarget, e.touches[0].clientX)}
+      onTouchMove={(e) => drag(e.currentTarget, e.touches[0].clientX)}
+      onTouchEnd={dragEnd}
+      onMouseDown={(e) => dragStart(e.currentTarget, e.clientX)}
+      onMouseMove={(e) => drag(e.currentTarget, e.clientX)}
       onMouseUp={dragEnd}
     ></canvas>
   );
