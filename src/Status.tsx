@@ -6,7 +6,7 @@ type Mode = "Manual" | "AI" | "Auto";
 export default function Status() {
   const [mode, setMode] = useState<Mode>("Manual");
   const [showModeSelect, setShowModeSelect] = useState(false);
-  const [batteryLevel, setBatteryLevel] = useState(3); // 0-4
+  const [batteryLevel, _setBatteryLevel] = useState(3); // 0-4
 
   const toggleModeSelect = () => {
     setShowModeSelect(!showModeSelect);
