@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { MoveControl, StrafeControl } from "./Joystick";
 import Button from "./Button";
 import Status from "./Status";
@@ -82,7 +83,57 @@ function Emotes() {
   );
 }
 
-function App() {
+function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
+  const [ip, setIp] = useState("");
+
+  return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: "20px",
+      }}
+    >
+      <h1>Connect to Robot</h1>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          width: "300px",
+        }}
+      >
+        <input
+          type="text"
+          value={ip}
+          onChange={(e) => setIp(e.target.value)}
+          placeholder="Enter Robot IP"
+          style={{
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
+        />
+        <Button
+          onClick={() => onConnect(ip)}
+          disabled={!ip}
+          style={{
+            padding: "10px",
+            fontSize: "16px",
+          }}
+        >
+          Connect
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ControlScreen({ onDisconnect }: { onDisconnect: () => void }) {
   return (
     <div
       style={{
@@ -131,6 +182,7 @@ function App() {
               borderColor: "red",
               flex: "1 1 auto",
             }}
+            onClick={onDisconnect}
           >
             HARD STOP
           </Button>
@@ -140,6 +192,56 @@ function App() {
         <StrafeControl />
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [connected, setConnected] = useState(false);
+  const [_robotIp, setRobotIp] = useState("");
+  const [_isFullscreen, setIsFullscreen] = useState(false);
+
+  const enterFullscreen = () => {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => console.error("Could not enter fullscreen mode:", err));
+    }
+  };
+
+  const handleConnect = (ip: string) => {
+    console.log("connect", ip);
+    setRobotIp(ip);
+    setConnected(true);
+    enterFullscreen();
+  };
+
+  const handleDisconnect = () => {
+    setConnected(false);
+    setRobotIp("");
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      if (!document.fullscreenElement && connected) {
+        handleDisconnect();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [connected]);
+
+  return connected ? (
+    <ControlScreen onDisconnect={handleDisconnect} />
+  ) : (
+    <ConnectionScreen onConnect={handleConnect} />
   );
 }
 
