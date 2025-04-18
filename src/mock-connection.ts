@@ -1,10 +1,16 @@
 export default class MockRobotConnection {
-  public errorHandler: (error: any) => void = console.error;
+  constructor(
+    // @ts-ignore
+    private ip: string,
+    // @ts-ignore
+    private connectHandler: () => void,
+    public errorHandler: (error: any) => void
+  ) {}
 
-  constructor(private ip: string) {}
-
+  // @ts-ignore
   move = (x: number, y: number, z: number) => {};
 
+  // @ts-ignore
   emote = (emoteId: number) => {};
 
   dispose() {}

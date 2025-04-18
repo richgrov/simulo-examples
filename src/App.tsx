@@ -87,19 +87,21 @@ function ConnectionScreen({
     setError(null);
 
     try {
-      const connection = new RobotConnection(ip);
-      connection.errorHandler = (error) => {
-        setError(`Connection error: ${error?.message || "Unknown error"}`);
-        setConnecting(false);
-      };
-
-      // Artificial delay to allow connection to establish
-      setTimeout(() => {
-        setConnecting(false);
-        onConnect(connection);
-      }, 1000);
+      const connection = new RobotConnection(
+        "192.168.12.1",
+        () => {
+          setConnecting(false);
+          onConnect(connection);
+        },
+        (error) => {
+          setError(
+            `Connection error: ${error?.message || JSON.stringify(error)}`
+          );
+          setConnecting(false);
+        }
+      );
     } catch (err: any) {
-      setError(`Failed to connect: ${err?.message || "Unknown error"}`);
+      setError(`Failed to connect: ${err?.message || JSON.stringify(err)}`);
       setConnecting(false);
     }
   };
@@ -184,7 +186,7 @@ function ControlScreen({
       try {
         connectionRef.current.move(-x, -curvedY, -z);
       } catch (err: any) {
-        setError(`Movement error: ${err?.message || "Unknown error"}`);
+        setError(`Movement error: ${err?.message || JSON.stringify(err)}`);
       }
     }, 100);
 
@@ -198,7 +200,7 @@ function ControlScreen({
     try {
       connectionRef.current.emote(id);
     } catch (err: any) {
-      setError(`Emote error: ${err?.message || "Unknown error"}`);
+      setError(`Emote error: ${err?.message || JSON.stringify(err)}`);
     }
   }
 

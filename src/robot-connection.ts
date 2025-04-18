@@ -6,9 +6,12 @@ export default class RobotConnection {
   private connection: RTCPeerConnection;
   private channel: RTCDataChannel;
   private heartbeatTimer: NodeJS.Timeout | undefined;
-  public errorHandler: (error: any) => void = console.error;
 
-  constructor(private ip: string) {
+  constructor(
+    private ip: string,
+    private connectHandler: () => void,
+    public errorHandler: (error: any) => void = console.error
+  ) {
     this.connection = new RTCPeerConnection();
     this.channel = this.connection.createDataChannel("data");
     this.connection.addTransceiver("video", { direction: "recvonly" });
@@ -34,7 +37,8 @@ export default class RobotConnection {
     this.connection
       .createOffer()
       .then((offer) => this.connection.setLocalDescription(offer))
-      .then(this.connect);
+      .then(this.connect)
+      .catch(this.errorHandler);
   }
 
   connect = async () => {
@@ -45,7 +49,9 @@ export default class RobotConnection {
       sdp: this.connection.localDescription!.sdp,
     };
 
-    const response = await fetch(`http://${this.ip}:9991/con_notify`);
+    const response = await fetch(`http://${this.ip}:9991/con_notify`, {
+      connectTimeout: 5000,
+    });
     const text = await response.text();
     const decoded = atob(text);
     const data1: string = JSON.parse(decoded).data1;
@@ -98,6 +104,7 @@ export default class RobotConnection {
 
     if (data.type === "validation") {
       if (data.data === "Validation Ok.") {
+        this.connectHandler();
         return;
       }
 
