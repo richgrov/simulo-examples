@@ -134,6 +134,22 @@ export default class RobotConnection {
     );
   };
 
+  emote = (emoteId: number) => {
+    const id =
+      (new Date().valueOf() % 2147483648) + Math.floor(Math.random() * 1e3);
+
+    this.channel.send(
+      JSON.stringify({
+        type: "msg",
+        topic: "rt/api/sport/request",
+        data: {
+          header: { identity: { id, api_id: emoteId } },
+          parameter: JSON.stringify(emoteId),
+        },
+      })
+    );
+  };
+
   dispose() {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);

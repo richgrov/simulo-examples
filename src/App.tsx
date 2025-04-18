@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { MoveControl, StrafeControl } from "./Joystick";
 import Button from "./Button";
 import Status from "./Status";
+import * as emotes from "./Emotes";
 
 import {
   FaArrowRight,
@@ -13,13 +14,23 @@ import {
   FaPersonPraying,
   FaPersonRunning,
   FaPersonWalking,
+  FaSuitcaseMedical,
+  FaWorm,
 } from "react-icons/fa6";
 import { GiJumpingDog } from "react-icons/gi";
 import { TbStretching } from "react-icons/tb";
 import { LuMusic2, LuMusic3 } from "react-icons/lu";
 import RobotConnection from "./robot-connection";
 
-function Emotes() {
+function Emotes({ onEmote }: { onEmote: (id: number) => void }) {
+  function EmoteButton(name: string, id: number, icon: JSX.Element) {
+    return (
+      <Button onClick={() => onEmote(id)}>
+        {name}
+        {icon}
+      </Button>
+    );
+  }
   return (
     <div style={{ overflow: "auto", flex: "1" }}>
       <div
@@ -29,56 +40,31 @@ function Emotes() {
           gridGap: 8,
         }}
       >
+        {EmoteButton("Walk", emotes.WALK, <FaPersonWalking size={25} />)}
         <Button>
-          Walk
-          <FaPersonWalking size={25} />
-        </Button>
-        <Button>
-          Run
+          (X) Run
           <FaPersonRunning size={25} />
         </Button>
+        {EmoteButton("Shake", emotes.HELLO, <FaHandshake size={25} />)}
+        {EmoteButton("Heart", emotes.HEART, <FaHeart size={25} />)}
         <Button>
-          Shake
-          <FaHandshake size={25} />
-        </Button>
-        <Button>
-          Heart
-          <FaHeart size={25} />
-        </Button>
-        <Button>
-          Beg
+          (X) Beg
           <FaPersonPraying size={25} />
         </Button>
-        <Button>
-          Pounce
-          <FaArrowRight size={25} />
-        </Button>
-        <Button>
-          Jump
-          <GiJumpingDog size={25} />
-        </Button>
-        <Button>
-          Sit
-          <FaChair size={25} />
-        </Button>
-        <Button>
-          Stretch
-          <TbStretching size={25} />
-        </Button>
-        <Button>
-          Roll
-          <FaArrowsSpin size={25} />
-        </Button>
-        <Button>
-          Dance 1<LuMusic2 size={25} />
-        </Button>
-        <Button>
-          Dance 2<LuMusic3 size={25} />
-        </Button>
-        <Button>
-          Flip
-          <FaHurricane size={25} />
-        </Button>
+        {EmoteButton("Pounce", emotes.POUNCE, <FaArrowRight size={25} />)}
+        {EmoteButton("Jump", emotes.JUMP, <GiJumpingDog size={25} />)}
+        {EmoteButton("Sit", emotes.SIT, <FaChair size={25} />)}
+        {EmoteButton("Stretch", emotes.STRETCH, <TbStretching size={25} />)}
+        {EmoteButton("Roll", emotes.ROLL, <FaArrowsSpin size={25} />)}
+        {EmoteButton("Dance 1", emotes.DANCE1, <LuMusic2 size={25} />)}
+        {EmoteButton("Dance 2", emotes.DANCE2, <LuMusic3 size={25} />)}
+        {EmoteButton("Flip", emotes.FRONT_FLIP, <FaHurricane size={25} />)}
+        {EmoteButton("Wiggle", emotes.WIGGLE, <FaWorm size={25} />)}
+        {EmoteButton(
+          "Recover",
+          emotes.RECOVER,
+          <FaSuitcaseMedical size={25} />
+        )}
       </div>
     </div>
   );
@@ -164,6 +150,10 @@ function ControlScreen({
     };
   }, []);
 
+  function onEmote(id: number) {
+    connection.current.emote(id);
+  }
+
   function onMove(x: number, y: number) {
     move.current = [x, y];
   }
@@ -202,7 +192,7 @@ function ControlScreen({
             flexDirection: "column",
           }}
         >
-          <Emotes />
+          <Emotes onEmote={onEmote} />
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
@@ -211,6 +201,7 @@ function ControlScreen({
               borderColor: "orange",
               flex: "1 1 auto",
             }}
+            onClick={() => onEmote(emotes.DAMP)}
           >
             SOFT STOP
           </Button>
