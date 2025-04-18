@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { MoveControl, StrafeControl } from "./Joystick";
 import Button from "./Button";
 import Status from "./Status";
+import RobotConnection from "./robot-connection";
+//import RobotConnection from "./mock-connection";
 import * as emotes from "./Emotes";
 
 import {
@@ -20,7 +22,6 @@ import {
 import { GiJumpingDog } from "react-icons/gi";
 import { TbStretching } from "react-icons/tb";
 import { LuMusic2, LuMusic3 } from "react-icons/lu";
-import RobotConnection from "./robot-connection";
 
 function Emotes({ onEmote }: { onEmote: (id: number) => void }) {
   function EmoteButton(name: string, id: number, icon: JSX.Element) {
