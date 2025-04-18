@@ -76,13 +76,10 @@ function ConnectionScreen({
 }: {
   onConnect: (connection: RobotConnection) => void;
 }) {
-  const [ip, setIp] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
 
   const handleConnect = async () => {
-    if (!ip) return;
-
     setConnecting(true);
     setError(null);
 
@@ -126,30 +123,16 @@ function ConnectionScreen({
           display: "flex",
           flexDirection: "column",
           gap: "10px",
-          width: "300px",
         }}
       >
-        <input
-          type="text"
-          value={ip}
-          onChange={(e) => setIp(e.target.value)}
-          placeholder="Enter Robot IP"
-          style={{
-            padding: "10px",
-            fontSize: "16px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-        />
         <Button
           onClick={handleConnect}
-          disabled={!ip || connecting}
+          disabled={connecting}
           style={{
-            padding: "10px",
-            fontSize: "16px",
+            padding: "inherit 10px",
           }}
         >
-          {connecting ? "Connecting..." : "Connect"}
+          {connecting ? "Connecting..." : "Hold to Connect"}
         </Button>
       </div>
     </div>
