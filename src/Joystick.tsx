@@ -28,7 +28,7 @@ function line(
   ctx.closePath();
 }
 
-export function MoveControl() {
+export function MoveControl(props: { onMove: (x: number, y: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef([0, 0]);
@@ -95,12 +95,15 @@ export function MoveControl() {
     const y = clientY - rect.top - HEIGHT / 2 - dragOffset.current[1];
     const xScaleFactor = WIDTH / rect.width;
     const yScaleFactor = HEIGHT / rect.height;
+
     joystickPos.current = [x * xScaleFactor, y * yScaleFactor];
+    props.onMove((x / rect.width) * 2, (y / rect.width) * 2);
   }
 
   function dragEnd() {
     setDragging(false);
     joystickPos.current = [0, 0];
+    props.onMove(0, 0);
   }
 
   return (
@@ -122,7 +125,7 @@ export function MoveControl() {
   );
 }
 
-export function StrafeControl() {
+export function StrafeControl(props: { onStrafe: (x: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef(0);
@@ -207,12 +210,15 @@ export function StrafeControl() {
     const rect = currentTarget.getBoundingClientRect();
     const x = clientX - rect.left - WIDTH / 2 - dragOffset.current;
     const scaleFactor = WIDTH / rect.width;
+
     sliderPos.current = x * scaleFactor;
+    props.onStrafe((x / rect.width) * 2);
   }
 
   function dragEnd() {
     setDragging(false);
     sliderPos.current = 0;
+    props.onStrafe(0);
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MoveControl, StrafeControl } from "./Joystick";
 import Button from "./Button";
 import Status from "./Status";
@@ -17,6 +17,7 @@ import {
 import { GiJumpingDog } from "react-icons/gi";
 import { TbStretching } from "react-icons/tb";
 import { LuMusic2, LuMusic3 } from "react-icons/lu";
+import RobotConnection from "./robot-connection";
 
 function Emotes() {
   return (
@@ -133,7 +134,44 @@ function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
   );
 }
 
-function ControlScreen({ onDisconnect }: { onDisconnect: () => void }) {
+function ControlScreen({
+  onDisconnect,
+  ip,
+}: {
+  onDisconnect: () => void;
+  ip: string;
+}) {
+  const connection = useRef(new RobotConnection("192.168.12.1"));
+  const move = useRef([0, 0]);
+  const strafe = useRef(0);
+
+  useEffect(() => {
+    const moveTimer = setInterval(() => {
+      const [z, x] = move.current;
+      const y = strafe.current;
+
+      if (y === 0 && x === 0 && z === 0) {
+        return;
+      }
+
+      console.log(-x, -y, -z);
+      connection.current.move(-x, -y, -z);
+    }, 100);
+
+    return () => {
+      connection.current.dispose();
+      clearInterval(moveTimer);
+    };
+  }, []);
+
+  function onMove(x: number, y: number) {
+    move.current = [x, y];
+  }
+
+  function onStrafe(x: number) {
+    strafe.current = x;
+  }
+
   return (
     <div
       style={{
@@ -182,14 +220,13 @@ function ControlScreen({ onDisconnect }: { onDisconnect: () => void }) {
               borderColor: "red",
               flex: "1 1 auto",
             }}
-            onClick={onDisconnect}
           >
             HARD STOP
           </Button>
         </div>
-        <MoveControl />
+        <MoveControl onMove={onMove} />
         <h3>Strafe</h3>
-        <StrafeControl />
+        <StrafeControl onStrafe={onStrafe} />
       </div>
     </div>
   );
@@ -197,8 +234,8 @@ function ControlScreen({ onDisconnect }: { onDisconnect: () => void }) {
 
 function App() {
   const [connected, setConnected] = useState(false);
-  const [_robotIp, setRobotIp] = useState("");
-  const [_isFullscreen, setIsFullscreen] = useState(false);
+  const [robotIp, setRobotIp] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const enterFullscreen = () => {
     if (document.documentElement.requestFullscreen) {
@@ -239,7 +276,7 @@ function App() {
   }, [connected]);
 
   return connected ? (
-    <ControlScreen onDisconnect={handleDisconnect} />
+    <ControlScreen onDisconnect={handleDisconnect} ip={robotIp} />
   ) : (
     <ConnectionScreen onConnect={handleConnect} />
   );
