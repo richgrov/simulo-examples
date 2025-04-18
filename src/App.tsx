@@ -135,13 +135,15 @@ function ControlScreen({
     const moveTimer = setInterval(() => {
       const [z, x] = move.current;
       const y = strafe.current;
+      const ySign = Math.sign(y);
+      const curvedY = (1 - Math.pow(1 - Math.abs(y), 4)) * ySign;
 
       if (y === 0 && x === 0 && z === 0) {
         return;
       }
 
-      console.log(-x, -y, -z);
-      connection.current.move(-x, -y, -z);
+      console.log(-x, -curvedY, -z);
+      connection.current.move(-x, -curvedY, -z);
     }, 100);
 
     return () => {
