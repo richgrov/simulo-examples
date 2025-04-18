@@ -6,6 +6,7 @@ export default class RobotConnection {
   private connection: RTCPeerConnection;
   private channel: RTCDataChannel;
   private heartbeatTimer: NodeJS.Timeout | undefined;
+  public errorHandler: (error: any) => void = console.error;
 
   constructor(private ip: string) {
     this.connection = new RTCPeerConnection();
@@ -27,13 +28,8 @@ export default class RobotConnection {
 
     this.channel.onmessage = this.onMessage;
 
-    this.channel.onerror = (event) => {
-      console.error("channel error", event);
-    };
-
-    this.channel.onclose = (event) => {
-      console.warn("channel closed", event);
-    };
+    this.channel.onerror = this.errorHandler;
+    this.channel.onclose = this.errorHandler;
 
     this.connection
       .createOffer()

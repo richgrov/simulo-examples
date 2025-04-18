@@ -71,8 +71,38 @@ function Emotes({ onEmote }: { onEmote: (id: number) => void }) {
   );
 }
 
-function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
+function ConnectionScreen({
+  onConnect,
+}: {
+  onConnect: (connection: RobotConnection) => void;
+}) {
   const [ip, setIp] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+
+  const handleConnect = async () => {
+    if (!ip) return;
+
+    setConnecting(true);
+    setError(null);
+
+    try {
+      const connection = new RobotConnection(ip);
+      connection.errorHandler = (error) => {
+        setError(`Connection error: ${error?.message || "Unknown error"}`);
+        setConnecting(false);
+      };
+
+      // Artificial delay to allow connection to establish
+      setTimeout(() => {
+        setConnecting(false);
+        onConnect(connection);
+      }, 1000);
+    } catch (err: any) {
+      setError(`Failed to connect: ${err?.message || "Unknown error"}`);
+      setConnecting(false);
+    }
+  };
 
   return (
     <div
@@ -86,6 +116,9 @@ function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
       }}
     >
       <h1>Connect to Robot</h1>
+      {error && (
+        <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+      )}
       <div
         style={{
           display: "flex",
@@ -107,14 +140,14 @@ function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
           }}
         />
         <Button
-          onClick={() => onConnect(ip)}
-          disabled={!ip}
+          onClick={handleConnect}
+          disabled={!ip || connecting}
           style={{
             padding: "10px",
             fontSize: "16px",
           }}
         >
-          Connect
+          {connecting ? "Connecting..." : "Connect"}
         </Button>
       </div>
     </div>
@@ -122,17 +155,22 @@ function ConnectionScreen({ onConnect }: { onConnect: (ip: string) => void }) {
 }
 
 function ControlScreen({
+  connection,
   onDisconnect,
-  ip,
 }: {
+  connection: RobotConnection;
   onDisconnect: () => void;
-  ip: string;
 }) {
-  const connection = useRef(new RobotConnection("192.168.12.1"));
+  const [error, setError] = useState<string | null>(null);
+  const connectionRef = useRef(connection);
   const move = useRef([0, 0]);
   const strafe = useRef(0);
 
   useEffect(() => {
+    connectionRef.current.errorHandler = (err) => {
+      setError(`Connection error: ${err?.message || "Connection lost"}`);
+    };
+
     const moveTimer = setInterval(() => {
       const [z, x] = move.current;
       const y = strafe.current;
@@ -143,18 +181,25 @@ function ControlScreen({
         return;
       }
 
-      console.log(-x, -curvedY, -z);
-      connection.current.move(-x, -curvedY, -z);
+      try {
+        connectionRef.current.move(-x, -curvedY, -z);
+      } catch (err: any) {
+        setError(`Movement error: ${err?.message || "Unknown error"}`);
+      }
     }, 100);
 
     return () => {
-      connection.current.dispose();
+      connectionRef.current.dispose();
       clearInterval(moveTimer);
     };
   }, []);
 
   function onEmote(id: number) {
-    connection.current.emote(id);
+    try {
+      connectionRef.current.emote(id);
+    } catch (err: any) {
+      setError(`Emote error: ${err?.message || "Unknown error"}`);
+    }
   }
 
   function onMove(x: number, y: number) {
@@ -186,6 +231,29 @@ function ControlScreen({
           overflow: "hidden",
         }}
       >
+        {error && (
+          <div
+            style={{
+              color: "red",
+              padding: "5px 10px",
+              backgroundColor: "rgba(255,0,0,0.1)",
+              borderRadius: "4px",
+            }}
+          >
+            {error}
+            <button
+              style={{
+                marginLeft: "10px",
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+              }}
+              onClick={() => setError(null)}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <Status />
         <div
           style={{
@@ -227,9 +295,8 @@ function ControlScreen({
 }
 
 function App() {
-  const [connected, setConnected] = useState(false);
-  const [robotIp, setRobotIp] = useState("");
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [connection, setConnection] = useState<RobotConnection | null>(null);
+  const [_isFullscreen, setIsFullscreen] = useState(false);
 
   const enterFullscreen = () => {
     if (document.documentElement.requestFullscreen) {
@@ -240,16 +307,16 @@ function App() {
     }
   };
 
-  const handleConnect = (ip: string) => {
-    console.log("connect", ip);
-    setRobotIp(ip);
-    setConnected(true);
+  const handleConnect = (newConnection: RobotConnection) => {
+    setConnection(newConnection);
     enterFullscreen();
   };
 
   const handleDisconnect = () => {
-    setConnected(false);
-    setRobotIp("");
+    if (connection) {
+      connection.dispose();
+    }
+    setConnection(null);
     if (document.exitFullscreen && document.fullscreenElement) {
       document.exitFullscreen();
     }
@@ -258,7 +325,7 @@ function App() {
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      if (!document.fullscreenElement && connected) {
+      if (!document.fullscreenElement && connection) {
         handleDisconnect();
       }
     };
@@ -267,10 +334,10 @@ function App() {
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
-  }, [connected]);
+  }, [connection]);
 
-  return connected ? (
-    <ControlScreen onDisconnect={handleDisconnect} ip={robotIp} />
+  return connection ? (
+    <ControlScreen connection={connection} onDisconnect={handleDisconnect} />
   ) : (
     <ConnectionScreen onConnect={handleConnect} />
   );
