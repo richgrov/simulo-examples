@@ -3182,6 +3182,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-haptics",
  "tauri-plugin-http",
  "tauri-plugin-opener",
 ]
@@ -3968,6 +3969,20 @@ dependencies = [
  "toml",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "tauri-plugin-haptics"
+version = "2.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d0cf9cd42700336fbd6321dee3538b5f9a735706c1740532eefb5453992dfbf"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

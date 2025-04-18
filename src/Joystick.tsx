@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { vibrate } from "@tauri-apps/plugin-haptics";
 
 const WIDTH = 400;
 const HEIGHT = 400;
@@ -33,6 +34,7 @@ export function MoveControl(props: { onMove: (x: number, y: number) => void }) {
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef([0, 0]);
   const joystickPos = useRef([0, 0]);
+  const lastMultiple = useRef([0, 0]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -74,6 +76,8 @@ export function MoveControl(props: { onMove: (x: number, y: number) => void }) {
     clientX: number,
     clientY: number
   ) {
+    vibrate(1);
+
     setDragging(true);
     const rect = currentTarget.getBoundingClientRect();
     const dx = clientX - rect.left - WIDTH / 2;
@@ -96,7 +100,31 @@ export function MoveControl(props: { onMove: (x: number, y: number) => void }) {
     const xScaleFactor = WIDTH / rect.width;
     const yScaleFactor = HEIGHT / rect.height;
 
-    joystickPos.current = [x * xScaleFactor, y * yScaleFactor];
+    const pixelX = x * xScaleFactor;
+    const pixelY = y * yScaleFactor;
+
+    const xMultiple = Math.trunc(x / 10);
+    const yMultiple = Math.trunc(y / 10);
+
+    if (xMultiple !== lastMultiple.current[0]) {
+      if (xMultiple === 0) {
+        vibrate(50);
+      } else if (xMultiple % 5 === 0) {
+        vibrate(1);
+      }
+      lastMultiple.current[0] = xMultiple;
+    }
+
+    if (yMultiple !== lastMultiple.current[1]) {
+      if (yMultiple === 0) {
+        vibrate(50);
+      } else if (yMultiple % 5 === 0) {
+        vibrate(1);
+      }
+      lastMultiple.current[1] = yMultiple;
+    }
+
+    joystickPos.current = [pixelX, pixelY];
     props.onMove((x / rect.width) * 2, (y / rect.width) * 2);
   }
 
@@ -130,6 +158,7 @@ export function StrafeControl(props: { onStrafe: (x: number) => void }) {
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef(0);
   const sliderPos = useRef(0);
+  const lastMultiple = useRef(0);
 
   const STRAFE_HEIGHT = 40;
   const SLIDER_WIDTH = 20;
@@ -200,6 +229,7 @@ export function StrafeControl(props: { onStrafe: (x: number) => void }) {
     const rect = currentTarget.getBoundingClientRect();
     const offsetX = clientX - rect.left - WIDTH / 2;
     dragOffset.current = offsetX;
+    vibrate(1);
   }
 
   function drag(currentTarget: HTMLCanvasElement, clientX: number) {
@@ -211,7 +241,17 @@ export function StrafeControl(props: { onStrafe: (x: number) => void }) {
     const x = clientX - rect.left - WIDTH / 2 - dragOffset.current;
     const scaleFactor = WIDTH / rect.width;
 
-    sliderPos.current = x * scaleFactor;
+    const pixelX = x * scaleFactor;
+    const multiple = Math.trunc(pixelX / 10);
+
+    if (multiple !== lastMultiple.current) {
+      if (multiple === 0) {
+        vibrate(1);
+      }
+      lastMultiple.current = multiple;
+    }
+
+    sliderPos.current = pixelX;
     props.onStrafe((x / rect.width) * 2);
   }
 

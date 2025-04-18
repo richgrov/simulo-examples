@@ -15,6 +15,10 @@
         { "url": "http://192.168.12.1:9991/*" },
         { "url": "http://192.168.12.1:*" }
       ]
-    }
+    },
+    "haptics:allow-impact-feedback",
+    "haptics:allow-notification-feedback",
+    "haptics:allow-selection-feedback",
+    "haptics:allow-vibrate"
   ]
 }
