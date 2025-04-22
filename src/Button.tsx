@@ -52,6 +52,8 @@ export default function Button(props: React.ComponentProps<"button">) {
     padding: "20px 0",
     position: "relative",
     overflow: "hidden",
+    userSelect: "none",
+    WebkitUserSelect: "none",
     ...props.style,
   };
 
