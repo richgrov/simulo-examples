@@ -150,6 +150,7 @@ function ControlScreen({
   const connectionRef = useRef(connection);
   const move = useRef([0, 0]);
   const strafe = useRef(0);
+  const wasZero = useRef(true);
 
   useEffect(() => {
     connectionRef.current.errorHandler = (err) => {
@@ -163,7 +164,12 @@ function ControlScreen({
       const curvedY = (1 - Math.pow(1 - Math.abs(y), 4)) * ySign;
 
       if (y === 0 && x === 0 && z === 0) {
-        return;
+        if (wasZero.current) {
+          return;
+        }
+        wasZero.current = true;
+      } else {
+        wasZero.current = false;
       }
 
       try {
