@@ -173,7 +173,7 @@ function ControlScreen({
       }
 
       try {
-        connectionRef.current.move(-x, -curvedY, -z);
+        connectionRef.current.move(x * -1.5, -curvedY, z * -1.5);
       } catch (err: any) {
         setError(`Movement error: ${err?.message || JSON.stringify(err)}`);
       }
