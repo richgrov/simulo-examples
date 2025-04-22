@@ -108,18 +108,14 @@ export function MoveControl(props: { onMove: (x: number, y: number) => void }) {
 
     if (xMultiple !== lastMultiple.current[0]) {
       if (xMultiple === 0) {
-        vibrate(50);
-      } else if (xMultiple % 5 === 0) {
-        vibrate(1);
+        vibrate(25);
       }
       lastMultiple.current[0] = xMultiple;
     }
 
     if (yMultiple !== lastMultiple.current[1]) {
       if (yMultiple === 0) {
-        vibrate(50);
-      } else if (yMultiple % 5 === 0) {
-        vibrate(1);
+        vibrate(25);
       }
       lastMultiple.current[1] = yMultiple;
     }
