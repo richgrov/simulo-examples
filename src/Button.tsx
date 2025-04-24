@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function Button(props: React.ComponentProps<"button">) {
-  const [isPressed, setIsPressed] = useState(false);
+  const [_isPressed, setIsPressed] = useState(false);
   const [fillPercentage, setFillPercentage] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -54,6 +54,7 @@ export default function Button(props: React.ComponentProps<"button">) {
     overflow: "hidden",
     userSelect: "none",
     WebkitUserSelect: "none",
+    WebkitTapHighlightColor: "transparent",
     ...props.style,
   };
 
