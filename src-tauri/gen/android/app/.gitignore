@@ -1,4 +1,4 @@
-/src/main/java/sh/grover/roboremote/generated
+/src/main/java/edu/neumont/roboremote/generated
 /src/main/jniLibs/**/*.so
 /src/main/assets/tauri.conf.json
 /tauri.build.gradle.kts

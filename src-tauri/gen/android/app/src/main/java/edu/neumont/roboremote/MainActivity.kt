@@ -1,3 +1,3 @@
-package sh.grover.roboremote
+package edu.neumont.roboremote
 
 class MainActivity : TauriActivity()
