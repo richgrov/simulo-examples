@@ -141,6 +141,7 @@ function ConnectionScreen({
 
 function ControlScreen({
   connection,
+  // @ts-ignore
   onDisconnect,
 }: {
   connection: RobotConnection;
