@@ -29,9 +29,11 @@ android {
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
             val keystoreProperties = Properties()
-            if (keystorePropertiesFile.exists()) {
-                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+            if (!keystorePropertiesFile.exists()) {
+                throw RuntimeException("keystore properties not found: $keystorePropertiesFile")
             }
+
+            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 
             keyAlias = keystoreProperties["keyAlias"] as String
             keyPassword = keystoreProperties["password"] as String
